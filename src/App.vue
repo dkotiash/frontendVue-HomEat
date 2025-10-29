@@ -1,24 +1,46 @@
 <script setup lang="ts">
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <header>
+    <nav>
+      <RouterLink to="/">Home</RouterLink>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Тут буде відображатись HomeView -->
+    <RouterView />
+  </main>
 </template>
 
-<style scoped></style>
+<style scoped>
+header {
+  line-height: 1.5;
+  max-height: 100vh;
+}
 
-/* Lifecycle hooks
-onMounted(async() => {
-let userClaims | undefined = undefined
-try {
+nav {
+  width: 100%;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 2rem;
+}
 
-інше
+nav a {
+  display: inline-block;
+  padding: 0 1rem;
+  border-left: 1px solid #ccc;
+  text-decoration: none;
+  color: #444;
+}
 
-async function loadThings(owner: string = ''){
-const baseUrl = import.meta.env.Vite_BACKEND_BASE_URL // http://localhost:8080 in dev mode
-const endpoinnt = baseUrl + '/things' + '?owner=' + owner
-const response : AxiosResponse = await.axios.get(endpoint)
+nav a:first-of-type {
+  border: 0;
+}
+
+main {
+  padding: 2rem;
+}
+</style>
