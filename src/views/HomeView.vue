@@ -1,22 +1,16 @@
 <template>
   <div class="home">
     <h1>Meine Lieblingsrezepte 🍽️</h1>
-
-    <!-- тут ми відображаємо кожен рецепт через Unterkomponente -->
-    <Rezept
-      v-for="(r, index) in rezepte"
-      :key="index"
-      :rezept="r"
-    />
+    <RezeptListe v-for="(r, index) in rezepte" :key="index" :rezepte="r" />
   </div>
 </template>
 
-<script>
-import Rezept from "@/components/Rezept.vue"
+<script lang="ts">
+import RezeptListe from '@/components/RezeptListe.vue'
 
 export default {
-  name: "HomeView",
-  components: { Rezept },
+  name: 'HomeView',
+  components: { RezeptListe: RezeptListe },
   data() {
     return {
       rezepte: [

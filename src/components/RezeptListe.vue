@@ -1,15 +1,15 @@
 <template>
   <div class="rezept-card">
-    <h3>{{ rezept.name }}</h3>
-    <p>{{ rezept.beschreibung }}</p>
+    <h3>{{ rezepte.name }}</h3>
+    <p>{{ rezepte.beschreibung }}</p>
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
-  name: "Rezept",
+  name: "RezeptListe",
   props: {
-    rezept: {
+    rezepte: {
       type: Object,
       required: true
     }
