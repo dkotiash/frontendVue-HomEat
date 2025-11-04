@@ -23,15 +23,23 @@ const error = ref<string | null>(null)
 
 // 🧩 функція для GET-запиту (тільки завантаження даних)
 async function loadRecipes() {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080"
-  const endpoint = `${baseUrl}/todos1`
+  const baseUrl = import.meta.env.VITE_APP_BACKEND_BASE_URL
+  const endpoint = `${baseUrl}/HomEat` // Ваш оригінальний endpoint
 
   try {
     const res = await fetch(endpoint)
-    if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`)
-
-    const data: HomEatEntry[] = await res.json()
-    items.value = data
+    // Перевірка статусу відповіді, як у вашому оригінальному коді
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} - ${res.statusText}`)
+    }
+    // Отримуємо дані у форматі JSON
+    const responseData: HomEatEntry[] = await res.json()
+    // Очищаємо поточний масив перед заповненням,
+    // або додаємо нові елементи, як у прикладі `loadThings`.
+    // Якщо потрібно замінити: items.value = responseData
+    // Якщо потрібно додати (як у прикладі з `loadThings`):
+    items.value = [] // Очищуємо, якщо потрібно показати тільки нові дані
+    responseData.forEach(item => items.value.push(item))
   } catch (e: unknown) {
     error.value = e instanceof Error ? e.message : String(e)
   } finally {
