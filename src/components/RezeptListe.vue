@@ -23,7 +23,7 @@ const error = ref<string | null>(null)
 
 // 🧩 функція для GET-запиту (тільки завантаження даних)
 async function loadRecipes() {
-  const baseUrl = import.meta.env.VITE_APP_BACKEND_BASE_URL
+  const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
   const endpoint = `${baseUrl}/HomEat` // Ваш оригінальний endpoint
 
   try {
