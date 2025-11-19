@@ -33,18 +33,30 @@
     <hr />
 
     <h2>Gespeicherte Rezepte</h2>
-    <p v-if="loading && items.length === 0">Lade Daten…</p>
-    <p v-else-if="error && items.length === 0">Fehler: {{ error }}</p>
 
-    <ul>
+    <div class="actions">
+      <button @click="loadRecipes" :disabled="loading">
+        Rezepte neu laden
+      </button>
+      <span v-if="loading">Lade Daten…</span>
+      <span v-if="error" class="error">Fehler: {{ error }}</span>
+    </div>
+
+    <p v-if="loading && items.length === 0">Die Daten werden vom Server geladen…</p>
+    <p v-else-if="!loading && items.length === 0 && !error">Es sind noch keine Rezepte gespeichert.</p>
+
+    <ul v-if="items.length > 0">
       <li v-for="(item, i) in items" :key="item.id ?? (item.title + i)" class="rezept-card">
         <h3>{{ item.title }}</h3>
-        <p>{{ item.description }}</p>
-        <ul class="zutaten-liste">
-          <li v-for="(ing, j) in item.ingredients" :key="j">
-            {{ ing.name }}<span v-if="ing.quantity"> — {{ ing.quantity }}</span>
-          </li>
-        </ul>
+        <p v-if="item.description">{{ item.description }}</p>
+        <div v-if="item.ingredients && item.ingredients.length > 0">
+          <h4>Zutaten:</h4>
+          <ul class="zutaten-liste">
+            <li v-for="(ing, j) in item.ingredients" :key="j">
+              {{ ing.name }}<span v-if="ing.quantity"> — {{ ing.quantity }}</span>
+            </li>
+          </ul>
+        </div>
       </li>
     </ul>
   </section>
