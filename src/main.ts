@@ -1,9 +1,11 @@
+// src/main.ts
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 
+// ⬇⬇⬇ ОЦЕЙ РЯДОК ПІДКЛЮЧАЄ ТВОЮ ТЕМУ
+import './assets/main.css'
+
 const app = createApp(App)
-
 app.use(router)
-
 app.mount('#app')

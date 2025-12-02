@@ -1,21 +1,13 @@
-<template>
-  <div class="home">
-    <h1>Meine Lieblingsrezepte 🍽️</h1>
-    <RezeptListe />
-  </div>
-</template>
-
-<script lang="ts">
+<script setup lang="ts">
 import RezeptListe from '@/components/RezeptListe.vue'
-
-export default {
-  name: 'HomeView',
-  components: { RezeptListe: RezeptListe }
-}
 </script>
 
+<template>
+  <main class="container">
+    <RezeptListe />
+  </main>
+</template>
+
 <style scoped>
-.home {
-  padding: 20px;
-}
+.container { max-width: 1200px; margin: 0 auto; padding: 16px; }
 </style>

@@ -1,46 +1,28 @@
-<script setup lang="ts">
-import { RouterView } from 'vue-router'
-</script>
-
 <template>
-  <header>
-    <nav>
-      <RouterLink to="/">Home</RouterLink>
-    </nav>
-  </header>
+  <div class="layout">
+    <!-- Ліва панель -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo logo--bg"></div>
+        <div class="brand-title">HomEat</div>
+      </div>
+      <nav class="nav">
+        <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/rezepte">Rezepte hinzufügen</RouterLink>
+        <RouterLink to="/suche">Suche</RouterLink>
+      </nav>
+    </aside>
 
-  <main>
-    <!-- Тут буде відображатись HomeView -->
-    <RouterView />
-  </main>
+    <!-- Центральна “скляна” область -->
+    <main class="glass">
+      <RouterView />
+    </main>
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
+<script setup lang="ts">
+</script>
 
-nav {
-  width: 100%;
-  font-size: 14px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid #ccc;
-  text-decoration: none;
-  color: #444;
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-main {
-  padding: 2rem;
-}
+<style>
+/* локальних стилів тут не потрібно – все у main.css */
 </style>
