@@ -4,7 +4,7 @@
 
     <div class="panel">
       <form @submit.prevent="save" class="form-grid">
-        <!-- Прев’ю зображення -->
+        <!-- Bildvorschau -->
         <div class="image-preview">
           <img v-if="imagePreview" :src="imagePreview" alt="Bild" />
           <span v-else>Bild-Vorschau</span>
@@ -26,14 +26,27 @@
           <button class="btn" type="button" @click="addIngredient">+</button>
         </div>
 
+        <!-- Versteckter File-Input -->
+        <input
+          type="file"
+          ref="fileInput"
+          accept="image/*"
+          @change="onFile"
+          style="display: none;"
+        />
+
         <div class="row" style="grid-column: 1 / -1; gap:12px; align-items:center;">
-          <input type="file" accept="image/*" @change="onFile" />
-          <button class="btn" type="button" @click="uploadImage" :disabled="!file || uploading">
+          <button class="btn" type="button" @click="triggerFileInput">
             Bild hinzufügen
           </button>
-          <span v-if="uploading">Lade Bild…</span>
-          <span v-if="imgError" style="color:#ffb3b3">Fehler: {{ imgError }}</span>
-          <span v-if="imageUrl" style="opacity:.8">URL: {{ imageUrl }}</span>
+          <button
+            v-if="imagePreview"
+            class="btn"
+            type="button"
+            @click="clearImage"
+          >
+            Bild entfernen
+          </button>
         </div>
 
         <div class="row" style="grid-column: 1 / -1; justify-content:flex-start; gap:14px;">
@@ -81,46 +94,42 @@ const items: Ref<Recipe[]> = ref([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 
-/* форма */
 const titleField = ref('')
 const descriptionField = ref('')
 const ingredientsField = ref<Ingredient[]>([{ name: '', quantity: '' }])
 
-/* зображення */
 const file = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
-const imageUrl = ref<string | null>(null)
-const uploading = ref(false)
-const imgError = ref<string | null>(null)
+const fileInput = ref<HTMLInputElement | null>(null)
+
+function triggerFileInput() {
+  fileInput.value?.click()
+}
 
 function onFile(e: Event) {
   const f = (e.target as HTMLInputElement).files?.[0] || null
   file.value = f
-  imagePreview.value = f ? URL.createObjectURL(f) : null
+  if (f) {
+    const reader = new FileReader()
+    reader.onload = () => {
+      imagePreview.value = String(reader.result || '')
+    }
+    reader.readAsDataURL(f)
+  } else {
+    imagePreview.value = null
+  }
 }
 
-async function uploadImage() {
-  if (!file.value) return
-  uploading.value = true
-  imgError.value = null
-  try {
-    const base = import.meta.env.VITE_BACKEND_BASE_URL
-    const fd = new FormData()
-    fd.append('file', file.value)
-    const res = await fetch(`${base}/api/images`, { method: 'POST', body: fd })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json() as { id: number; url: string; filename: string }
-    imageUrl.value = data.url
-  } catch (e: unknown) {
-    imgError.value = e instanceof Error ? e.message : String(e)
-  } finally {
-    uploading.value = false
-  }
+function clearImage() {
+  file.value = null
+  imagePreview.value = null
+  if (fileInput.value) fileInput.value.value = ''
 }
 
 function addIngredient() {
   ingredientsField.value.push({ name: '', quantity: '' })
 }
+
 function removeIngredient(idx: number) {
   if (ingredientsField.value.length > 1) ingredientsField.value.splice(idx, 1)
   else ingredientsField.value[0] = { name: '', quantity: '' }
@@ -147,15 +156,28 @@ async function save() {
     .map(i => ({ name: i.name.trim(), quantity: (i.quantity || '').trim() }))
     .filter(i => i.name.length > 0)
 
-  const data: Omit<Recipe, 'id'> = {
-    title: titleField.value.trim(),
-    description: descriptionField.value.trim(),
-    ingredients: cleanedIngredients,
-    imageUrl: imageUrl.value || undefined
-  }
-
   try {
     const base = import.meta.env.VITE_BACKEND_BASE_URL
+
+    // 1. Upload Bild falls vorhanden
+    let uploadedImageUrl: string | undefined
+    if (file.value) {
+      const fd = new FormData()
+      fd.append('file', file.value)
+      const imgRes = await fetch(`${base}/api/images`, { method: 'POST', body: fd })
+      if (!imgRes.ok) throw new Error(`Bild-Upload fehlgeschlagen: ${imgRes.status}`)
+      const imgData = await imgRes.json() as { url: string }
+      uploadedImageUrl = imgData.url
+    }
+
+    // 2. Rezept speichern
+    const data: Omit<Recipe, 'id'> = {
+      title: titleField.value.trim(),
+      description: descriptionField.value.trim(),
+      ingredients: cleanedIngredients,
+      imageUrl: uploadedImageUrl
+    }
+
     const res = await fetch(`${base}/HomEat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -165,12 +187,11 @@ async function save() {
     const saved = await res.json()
     items.value.unshift(saved)
 
+    // Reset
     titleField.value = ''
     descriptionField.value = ''
     ingredientsField.value = [{ name: '', quantity: '' }]
-    file.value = null
-    imagePreview.value = null
-    imageUrl.value = null
+    clearImage()
   } catch (e: unknown) {
     error.value = e instanceof Error ? e.message : String(e)
   } finally {
@@ -180,6 +201,7 @@ async function save() {
 
 onMounted(loadRecipes)
 </script>
+
 
 <style scoped>
 .form-grid {
