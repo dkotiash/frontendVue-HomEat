@@ -1,39 +1,46 @@
 // src/types.ts
 
-// ---- доменні сутності (узгоджено з твоїм беком) ----
-export type Ingredient = {
-  name: string;
-  quantity: string;
-};
+// ---- Domainen-Entitäten (abgestimmt mit Backend) ----
+export interface Ingredient {
+  name: string
+  quantity: string
+}
 
-export type RecipeImage = {
-  id: number;
-  filename: string;
-  contentType: string;
-  size: number;
-};
+export interface RecipeImage {
+  id: number
+  filename: string
+  contentType: string
+  size: number
+}
 
-export type Recipe = {
-  id: number;
-  title: string;
-  description: string;
-  ingredients: Ingredient[];
-  images?: RecipeImage[]; // бек може повертати масив (OneToMany)
-};
+export interface Recipe {
+  id: number
+  title: string
+  description: string
+  ingredients: Ingredient[]
+  images?: RecipeImage[]
+  imageUrl?: string
+}
 
-// DTO на створення рецепта
-export type CreateRecipeDTO = {
-  title: string;
-  description: string;
-  ingredients: Ingredient[];
-};
+// DTO für das Erstellen eines Rezepts
+export interface CreateRecipeDTO {
+  title: string
+  description: string
+  ingredients: Ingredient[]
+  imageUrl?: string
+}
 
-// Відповідь від /api/images (твій ImageResponse)
-export type ImageResponse = {
-  id: number;
-  url: string;         // з контролера (ми його одразу використовуємо)
-  filename: string;
-  size: number;
-  contentType: string;
-  recipeId?: number | null;
-};
+// Antwort von /api/images (ImageResponse vom Backend)
+export interface ImageResponse {
+  id: number
+  url: string
+  filename: string
+  size: number
+  contentType: string
+  recipeId?: number | null
+}
+
+// Hilfstyypen für Rezepte mit Bildern
+export type RecipeWithImages = Recipe & {
+  images: RecipeImage[]
+}

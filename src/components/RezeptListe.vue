@@ -111,8 +111,8 @@ async function uploadImage() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json() as { id: number; url: string; filename: string }
     imageUrl.value = data.url
-  } catch (e: any) {
-    imgError.value = e?.message ?? String(e)
+  } catch (e: unknown) {
+    imgError.value = e instanceof Error ? e.message : String(e)
   } finally {
     uploading.value = false
   }
@@ -132,8 +132,8 @@ async function loadRecipes() {
     const res = await fetch(`${base}/HomEat`)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     items.value = await res.json()
-  } catch (e: any) {
-    error.value = e?.message ?? String(e)
+  } catch (e: unknown) {
+    error.value = e instanceof Error ? e.message : String(e)
   } finally {
     loading.value = false
   }
@@ -147,7 +147,7 @@ async function save() {
     .map(i => ({ name: i.name.trim(), quantity: (i.quantity || '').trim() }))
     .filter(i => i.name.length > 0)
 
-  const data: Recipe = {
+  const data: Omit<Recipe, 'id'> = {
     title: titleField.value.trim(),
     description: descriptionField.value.trim(),
     ingredients: cleanedIngredients,
@@ -171,8 +171,8 @@ async function save() {
     file.value = null
     imagePreview.value = null
     imageUrl.value = null
-  } catch (e: any) {
-    error.value = e?.message ?? String(e)
+  } catch (e: unknown) {
+    error.value = e instanceof Error ? e.message : String(e)
   } finally {
     loading.value = false
   }
