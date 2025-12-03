@@ -4,12 +4,13 @@
 
     <div class="panel">
       <form @submit.prevent="save" class="form-grid">
-        <!-- Bildvorschau -->
+        <!-- Bildvorschau (зліва) -->
         <div class="image-preview">
           <img v-if="imagePreview" :src="imagePreview" alt="Bild" />
           <span v-else>Bild-Vorschau</span>
         </div>
 
+        <!-- Поля праворуч -->
         <div class="form-right">
           <label class="label">Titel:</label>
           <input class="input" v-model="titleField" required />
@@ -26,7 +27,7 @@
           <button class="btn" type="button" @click="addIngredient">+</button>
         </div>
 
-        <!-- Versteckter File-Input -->
+        <!-- Прихований file input -->
         <input
           type="file"
           ref="fileInput"
@@ -35,6 +36,7 @@
           style="display: none;"
         />
 
+        <!-- Кнопки для фото -->
         <div class="row" style="grid-column: 1 / -1; gap:12px; align-items:center;">
           <button class="btn" type="button" @click="triggerFileInput">
             Bild hinzufügen
@@ -49,6 +51,7 @@
           </button>
         </div>
 
+        <!-- Кнопки збереження -->
         <div class="row" style="grid-column: 1 / -1; justify-content:flex-start; gap:14px;">
           <button class="btn" type="submit" :disabled="loading">Speichern</button>
           <span v-if="loading">Speichert…</span>
@@ -71,7 +74,11 @@
         <li v-for="(item, i) in items" :key="item.id ?? (item.title + i)" class="panel" style="margin-bottom:12px;">
           <h4 style="margin:0 0 6px">{{ item.title }}</h4>
           <p v-if="item.description" style="margin:0 0 8px; opacity:.9">{{ item.description }}</p>
-          <img v-if="item.imageUrl" :src="item.imageUrl" style="max-width:240px;border-radius:10px;border:1px solid rgba(255,255,255,.2)" />
+          <img
+            v-if="item.imageUrl"
+            :src="item.imageUrl"
+            style="max-width:240px;border-radius:10px;border:1px solid rgba(255,255,255,.2)"
+          />
           <div v-if="item.ingredients && item.ingredients.length">
             <h5 style="margin:10px 0 6px;">Zutaten:</h5>
             <ul style="margin:0; padding-left:18px;">
@@ -102,6 +109,8 @@ const file = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 
+const base = import.meta.env.VITE_BACKEND_BASE_URL
+
 function triggerFileInput() {
   fileInput.value?.click()
 }
@@ -111,9 +120,7 @@ function onFile(e: Event) {
   file.value = f
   if (f) {
     const reader = new FileReader()
-    reader.onload = () => {
-      imagePreview.value = String(reader.result || '')
-    }
+    reader.onload = () => { imagePreview.value = String(reader.result || '') }
     reader.readAsDataURL(f)
   } else {
     imagePreview.value = null
@@ -135,12 +142,20 @@ function removeIngredient(idx: number) {
   else ingredientsField.value[0] = { name: '', quantity: '' }
 }
 
+function computeImageUrl(r: Recipe): string | undefined {
+  const first = r.images && r.images.length > 0 ? r.images[0] : undefined
+  return first ? `${base}/api/images/${first.id}` : undefined
+}
+
 async function loadRecipes() {
-  const base = import.meta.env.VITE_BACKEND_BASE_URL
   try {
     const res = await fetch(`${base}/HomEat`)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    items.value = await res.json()
+    const raw: Recipe[] = await res.json()
+    items.value = raw.map(r => ({
+      ...r,
+      imageUrl: r.imageUrl ?? computeImageUrl(r)
+    }))
   } catch (e: unknown) {
     error.value = e instanceof Error ? e.message : String(e)
   } finally {
@@ -157,37 +172,35 @@ async function save() {
     .filter(i => i.name.length > 0)
 
   try {
-    const base = import.meta.env.VITE_BACKEND_BASE_URL
+    // 1) Спочатку зберігаємо рецепт
+    const recipePayload = {
+      title: titleField.value.trim(),
+      description: descriptionField.value.trim(),
+      ingredients: cleanedIngredients
+      // НЕ шлемо imageUrl — прив’язка буде через /api/images з recipeId
+    }
 
-    // 1. Upload Bild falls vorhanden
-    let uploadedImageUrl: string | undefined
+    const saveRes = await fetch(`${base}/HomEat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(recipePayload)
+    })
+    if (!saveRes.ok) throw new Error(`HTTP ${saveRes.status}`)
+    const saved: Recipe = await saveRes.json()
+
+    // 2) Якщо є файл — вантажимо і прив’язуємо його до рецепта
     if (file.value) {
       const fd = new FormData()
       fd.append('file', file.value)
+      fd.append('recipeId', String(saved.id))
       const imgRes = await fetch(`${base}/api/images`, { method: 'POST', body: fd })
       if (!imgRes.ok) throw new Error(`Bild-Upload fehlgeschlagen: ${imgRes.status}`)
-      const imgData = await imgRes.json() as { url: string }
-      uploadedImageUrl = imgData.url
     }
 
-    // 2. Rezept speichern
-    const data: Omit<Recipe, 'id'> = {
-      title: titleField.value.trim(),
-      description: descriptionField.value.trim(),
-      ingredients: cleanedIngredients,
-      imageUrl: uploadedImageUrl
-    }
+    // 3) Оновлюємо список (щоб підтягнувся images[])
+    await loadRecipes()
 
-    const res = await fetch(`${base}/HomEat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const saved = await res.json()
-    items.value.unshift(saved)
-
-    // Reset
+    // 4) Скидаємо форму
     titleField.value = ''
     descriptionField.value = ''
     ingredientsField.value = [{ name: '', quantity: '' }]
@@ -201,7 +214,6 @@ async function save() {
 
 onMounted(loadRecipes)
 </script>
-
 
 <style scoped>
 .form-grid {
