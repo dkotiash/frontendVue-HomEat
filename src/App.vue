@@ -7,8 +7,8 @@
         <div class="brand-title">HomEat</div>
       </div>
       <nav class="nav">
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/rezepte">Rezepte hinzufügen</RouterLink>
+        <RouterLink to="/home">Home</RouterLink>
+        <RouterLink to="/">Rezepte hinzufügen</RouterLink>
         <RouterLink to="/suche">Suche</RouterLink>
       </nav>
     </aside>
