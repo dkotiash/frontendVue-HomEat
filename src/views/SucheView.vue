@@ -6,16 +6,24 @@ const q = ref('')
 const results = ref<Recipe[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
+const base = import.meta.env.VITE_BACKEND_BASE_URL
+
+function computeImageUrl(r: Recipe): string | undefined {
+  const first = r.images && r.images.length > 0 ? r.images[0] : undefined
+  return first ? `${base}/api/images/${first.id}` : undefined
+}
 
 async function search() {
   loading.value = true
   error.value = null
   try {
     // тимчасово — фетчимо всі /HomEat і фільтруємо на клієнті
-    const base = import.meta.env.VITE_BACKEND_BASE_URL
     const res = await fetch(`${base}/HomEat`)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const all = (await res.json()) as Recipe[]
+    const all = ((await res.json()) as Recipe[]).map(r => ({
+      ...r,
+      imageUrl: r.imageUrl ?? computeImageUrl(r)
+    }))
     const s = q.value.trim().toLowerCase()
     results.value = s
       ? all.filter(r =>
