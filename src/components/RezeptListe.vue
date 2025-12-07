@@ -221,9 +221,13 @@ async function save() {
   }
 }
 async function deleteRecipe(id: number | undefined) {
-  if (!id) return
+  console.log("Versuche zu löschen. ID ist:", id) // <--- NEU
 
-  // Sicherheitsabfrage, damit man nicht aus Versehen löscht
+  if (!id) {
+    console.error("Abbruch: Keine ID vorhanden!") // <--- NEU
+    return
+  }
+
   if (!confirm('Möchtest du dieses Rezept wirklich löschen?')) return
 
   loading.value = true
