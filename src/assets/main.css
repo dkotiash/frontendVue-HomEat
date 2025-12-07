@@ -151,6 +151,8 @@ body {
 
 /* Інпут/textarea */
 .input, .textarea {
+  box-sizing: border-box;  /* <--- FÜGE DIESE ZEILE HINZU */
+
   width: 100%;
   background: #1e1c1c;
   color: var(--text);
