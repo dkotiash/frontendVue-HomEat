@@ -20,6 +20,7 @@ export interface Recipe {
   ingredients: Ingredient[]
   images?: RecipeImage[]
   imageUrl?: string
+  ownerId?: string;
 }
 
 // DTO für das Erstellen eines Rezepts

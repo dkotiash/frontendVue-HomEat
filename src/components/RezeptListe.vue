@@ -103,8 +103,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, type Ref } from 'vue'
+import { ref, watchEffect, type Ref } from 'vue' // WICHTIG: watchEffect hier importieren
 import type { Ingredient, Recipe } from '@/types'
+import { useAuth0 } from '@auth0/auth0-vue' // Auth0 importieren
+
+// Auth0 Variablen holen
+const { user, isAuthenticated } = useAuth0()
 
 const items: Ref<Recipe[]> = ref([])
 const loading = ref(true)
@@ -119,6 +123,8 @@ const imagePreview = ref<string | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 const base = import.meta.env.VITE_BACKEND_BASE_URL
+
+// --- Hilfsfunktionen für Bilder & Formular ---
 
 function triggerFileInput() {
   fileInput.value?.click()
@@ -156,15 +162,37 @@ function computeImageUrl(r: Recipe): string | undefined {
   return first ? `${base}/api/images/${first.id}` : undefined
 }
 
+// --- HAUPTFUNKTIONEN (Laden & Speichern & Löschen) ---
+
 async function loadRecipes() {
+  // Wenn der User noch nicht geladen ist, können wir nicht filtern -> Abbruch
+  if (!user.value) return
+
+  loading.value = true
   try {
     const res = await fetch(`${base}/HomEat`)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const raw: Recipe[] = await res.json()
-    items.value = raw.map(r => ({
+
+    // --- DEBUGGING START ---
+    console.log("Mein aktueller User:", user.value.sub)
+    console.log("Rezepte vom Server:", raw)
+    // -----------------------
+
+    // Bilder berechnen
+    const allRecipes = raw.map(r => ({
       ...r,
       imageUrl: r.imageUrl ?? computeImageUrl(r)
     }))
+
+    // FILTER: Nur Rezepte anzeigen, die MIR gehören
+    // Wir vergleichen die ownerId aus der DB mit der ID des eingeloggten Users
+    if (user.value && user.value.sub) {
+      items.value = allRecipes.filter(r => r.ownerId === user.value?.sub)
+    } else {
+      items.value = []
+    }
+
   } catch (e: unknown) {
     error.value = e instanceof Error ? e.message : String(e)
   } finally {
@@ -181,14 +209,15 @@ async function save() {
     .filter(i => i.name.length > 0)
 
   try {
-    // 1) Спочатку зберігаємо рецепт
+    // 1) Rezept-Objekt erstellen
     const recipePayload = {
       title: titleField.value.trim(),
       description: descriptionField.value.trim(),
-      ingredients: cleanedIngredients
-      // НЕ шлемо imageUrl — прив’язка буде через /api/images з recipeId
+      ingredients: cleanedIngredients,
+      ownerId: user.value?.sub // <--- WICHTIG: Deine ID mitsenden!
     }
 
+    // 2) Speichern (POST)
     const saveRes = await fetch(`${base}/HomEat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -197,7 +226,7 @@ async function save() {
     if (!saveRes.ok) throw new Error(`HTTP ${saveRes.status}`)
     const saved: Recipe = await saveRes.json()
 
-    // 2) Якщо є файл — вантажимо і прив’язуємо його до рецепта
+    // 3) Bild hochladen (falls vorhanden)
     if (file.value) {
       const fd = new FormData()
       fd.append('file', file.value)
@@ -206,10 +235,10 @@ async function save() {
       if (!imgRes.ok) throw new Error(`Bild-Upload fehlgeschlagen: ${imgRes.status}`)
     }
 
-    // 3) Оновлюємо список (щоб підтягнувся images[])
+    // 4) Liste aktualisieren
     await loadRecipes()
 
-    // 4) Скидаємо форму
+    // 5) Formular zurücksetzen
     titleField.value = ''
     descriptionField.value = ''
     ingredientsField.value = [{ name: '', quantity: '' }]
@@ -220,21 +249,15 @@ async function save() {
     loading.value = false
   }
 }
+
 async function deleteRecipe(id: number | undefined) {
-  console.log("Versuche zu löschen. ID ist:", id) // <--- NEU
-
-  if (!id) {
-    console.error("Abbruch: Keine ID vorhanden!") // <--- NEU
-    return
-  }
-
+  if (!id) return
   if (!confirm('Möchtest du dieses Rezept wirklich löschen?')) return
 
   loading.value = true
   error.value = null
 
   try {
-    // Anfrage an den Server senden (DELETE /HomEat/{id})
     const res = await fetch(`${base}/HomEat/${id}`, {
       method: 'DELETE',
     })
@@ -243,7 +266,6 @@ async function deleteRecipe(id: number | undefined) {
       throw new Error(`Löschen fehlgeschlagen: HTTP ${res.status}`)
     }
 
-    // Liste neu laden, um das gelöschte Rezept verschwinden zu lassen
     await loadRecipes()
 
   } catch (e: unknown) {
@@ -253,7 +275,15 @@ async function deleteRecipe(id: number | undefined) {
   }
 }
 
-onMounted(loadRecipes)
+// --- AUTOMATISCHES LADEN ---
+// WICHTIG: watchEffect statt onMounted.
+// Das sorgt dafür, dass loadRecipes erst ausgeführt wird,
+// wenn "user" von Auth0 fertig geladen ist.
+watchEffect(() => {
+  if (isAuthenticated.value && user.value) {
+    loadRecipes()
+  }
+})
 </script>
 
 <style scoped>

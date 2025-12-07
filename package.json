@@ -18,7 +18,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@okta/okta-vue": "^5.8.0",
+    "@auth0/auth0-vue": "^2.4.0",
     "axios": "^1.13.1",
     "vite-plugin-vue-inspector": "^5.3.2",
     "vue": "^3.5.22",
