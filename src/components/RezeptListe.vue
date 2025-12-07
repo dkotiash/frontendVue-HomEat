@@ -79,6 +79,15 @@
             :src="item.imageUrl"
             style="max-width:240px;border-radius:10px;border:1px solid rgba(255,255,255,.2)"
           />
+          <div style="margin-top: 12px; text-align: right;">
+            <button
+              class="btn"
+              style="background: #cf4545; color: white; font-size: 0.9em;"
+              @click="deleteRecipe(item.id)"
+            >
+              Löschen
+            </button>
+          </div>
           <div v-if="item.ingredients && item.ingredients.length">
             <h5 style="margin:10px 0 6px;">Zutaten:</h5>
             <ul style="margin:0; padding-left:18px;">
@@ -205,6 +214,34 @@ async function save() {
     descriptionField.value = ''
     ingredientsField.value = [{ name: '', quantity: '' }]
     clearImage()
+  } catch (e: unknown) {
+    error.value = e instanceof Error ? e.message : String(e)
+  } finally {
+    loading.value = false
+  }
+}
+async function deleteRecipe(id: number | undefined) {
+  if (!id) return
+
+  // Sicherheitsabfrage, damit man nicht aus Versehen löscht
+  if (!confirm('Möchtest du dieses Rezept wirklich löschen?')) return
+
+  loading.value = true
+  error.value = null
+
+  try {
+    // Anfrage an den Server senden (DELETE /HomEat/{id})
+    const res = await fetch(`${base}/HomEat/${id}`, {
+      method: 'DELETE',
+    })
+
+    if (!res.ok) {
+      throw new Error(`Löschen fehlgeschlagen: HTTP ${res.status}`)
+    }
+
+    // Liste neu laden, um das gelöschte Rezept verschwinden zu lassen
+    await loadRecipes()
+
   } catch (e: unknown) {
     error.value = e instanceof Error ? e.message : String(e)
   } finally {
