@@ -65,7 +65,7 @@
               </ul>
             </div>
             <div style="margin-top: 20px;">
-              <button class="btn" style="background: transparent; border: 1px solid #ccc;" @click="toggleExpand(r.id!)">Schließen</button>
+              <button class="btn btn-peach" @click="toggleExpand(r.id!)">Schließen</button>
             </div>
           </div>
 
