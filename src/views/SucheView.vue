@@ -83,17 +83,16 @@ async function loadFromApi() {
   }
 }
 
-// 2. Nur lokal filtern (ohne Server-Anfrage) -> Blitzschnell
 function filterLocal() {
-  const s = q.value.trim().toLowerCase()
+  const rawInput = q.value.toLowerCase()
+  // Teilt bei Komma oder Leerzeichen
+  const searchTerms = rawInput.split(/[ ,]+/).filter(Boolean)
 
-  if (!s) {
-    // Wenn nichts im Suchfeld steht, zeigen wir alles
+  if (searchTerms.length === 0) {
     results.value = allRecipes.value
     return
   }
 
-  // Suchen in Titel, Beschreibung UND Zutaten
   results.value = allRecipes.value.filter(r => {
     const textToSearch = [
       r.title,
@@ -101,7 +100,9 @@ function filterLocal() {
       ...(r.ingredients?.map(i => i.name) ?? [])
     ].join(' ').toLowerCase()
 
-    return textToSearch.includes(s)
+    // HIER IST DIE ÄNDERUNG:
+    // .some() bedeutet: Es reicht, wenn EINER der Suchbegriffe gefunden wird.
+    return searchTerms.some(term => textToSearch.includes(term))
   })
 }
 
