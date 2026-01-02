@@ -21,6 +21,7 @@ export interface Recipe {
   images?: RecipeImage[]
   imageUrl?: string
   ownerId?: string;
+  likes?: number;
 }
 
 // DTO für das Erstellen eines Rezepts

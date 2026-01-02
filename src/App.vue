@@ -9,6 +9,8 @@
       <nav class="nav">
         <RouterLink to="/">Home</RouterLink>
 
+        <RouterLink to="/einkaufsliste">Einkaufsliste</RouterLink>
+
         <RouterLink to="/rezepte">Rezepte hinzufügen</RouterLink>
 
         <RouterLink to="/suche">Suche</RouterLink>
