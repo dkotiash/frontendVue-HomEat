@@ -13,15 +13,33 @@ export interface RecipeImage {
   size: number
 }
 
+// 1. NEU: Das Interface für Bewertungen
+export interface Review {
+  text: string
+  rating: number
+  authorName: string
+}
+
+// 2. UPDATE: Das Rezept-Interface erweitern
 export interface Recipe {
-  id: number
+  id?: number
   title: string
   description: string
-  ingredients: Ingredient[]
-  images?: RecipeImage[]
+  ingredients?: {
+    name: string
+    quantity: string
+  }[]
+  images?: {
+    id: number
+    // ... andere Bild-Felder
+  }[]
   imageUrl?: string
-  ownerId?: string;
-  likes?: number;
+  ownerId?: string
+
+  // --- HIER SIND DIE NEUEN FELDER: ---
+  likes?: number        // Damit TypeScript 'r.likes' kennt
+  reviews?: Review[]    // Damit TypeScript 'r.reviews' kennt
+  // -----------------------------------
 }
 
 // DTO für das Erstellen eines Rezepts
