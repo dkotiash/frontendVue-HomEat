@@ -1,4 +1,3 @@
-HTML
 <template>
   <li class="panel recipe-card">
 
@@ -91,7 +90,7 @@ HTML
 
 <script setup lang="ts">
 import { ref, watch } from 'vue' // Додали watch
-import type { Recipe, Review } from '@/types' // Додали тип Review, якщо він є
+import type { Recipe} from '@/types' // Додали тип Review, якщо він є
 import { useAuth0 } from '@auth0/auth0-vue'
 
 const props = defineProps<{
@@ -112,11 +111,8 @@ const showComments = ref(false)
 const replyText = ref('')
 const sending = ref(false)
 
-// --- ВИПРАВЛЕННЯ ПОМИЛКИ mutation prop ---
-// 1. Створюємо локальну копію відгуків
 const localReviews = ref(props.recipe.reviews ? [...props.recipe.reviews] : [])
 
-// 2. Слідкуємо за змінами в props (якщо батько оновить дані), оновлюємо локальну копію
 watch(() => props.recipe.reviews, (newVal) => {
   localReviews.value = newVal ? [...newVal] : []
 })
@@ -148,7 +144,6 @@ async function addReply() {
 
     const updatedRecipe = await res.json()
 
-    // 3. Оновлюємо ЛОКАЛЬНУ копію, а не проп
     if (updatedRecipe.reviews) {
       localReviews.value = updatedRecipe.reviews
     }
@@ -163,7 +158,6 @@ async function addReply() {
 </script>
 
 <style scoped>
-/* Стилі залишаються без змін */
 .panel { background: rgba(28, 28, 28, 0.6); padding: 20px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); color: white; list-style: none; margin-bottom: 12px; }
 .card-title { margin: 0 0 12px; font-size: 1.2em; }
 .card-image { max-width: 240px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); display: block; margin-bottom: 12px; }
