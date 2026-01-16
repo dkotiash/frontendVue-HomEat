@@ -74,7 +74,7 @@ Diese Sektion beschreibt, wie die Frontend-Tests angelegt sind, wo sie liegen, w
 - `src/__tests__/`  
   Allgemeine App-Tests (z. B. `App.spec.ts`).
 - `src/components/__tests__/`  
-  Komponententests (z. B. `RezeptListe.spec.ts`).
+  Komponententests (z. B. `Recipe.spec.ts`).
 
 Beispielhafte Baumansicht:
 ```
@@ -83,14 +83,14 @@ src/
     App.spec.ts
   components/
     __tests__/
-      RezeptListe.spec.ts
+      Recipe.spec.ts
 ```
 
 ### Wo Tests gespeichert werden
 - Alle Testdateien liegen im Projektordner `src` in `__tests__`-Unterordnern.
 - Beispielpfade:
   - `src/__tests__/App.spec.ts`
-  - `src/components/__tests__/RezeptListe.spec.ts`
+  - `src/components/__tests__/Recipe.spec.ts`
 
 ### Wie Vitest Tests erkennt
 - Standard: Vitest scannt `src` nach Dateien mit dem Muster `*.spec.ts` oder `*.test.ts`.

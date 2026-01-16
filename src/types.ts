@@ -1,6 +1,3 @@
-// src/types.ts
-
-// ---- Domainen-Entitäten (abgestimmt mit Backend) ----
 export interface Ingredient {
   name: string
   quantity: string
@@ -13,14 +10,12 @@ export interface RecipeImage {
   size: number
 }
 
-// 1. NEU: Das Interface für Bewertungen
 export interface Review {
   text: string
   rating: number
   authorName: string
 }
 
-// 2. UPDATE: Das Rezept-Interface erweitern
 export interface Recipe {
   id?: number
   title: string
@@ -31,18 +26,14 @@ export interface Recipe {
   }[]
   images?: {
     id: number
-    // ... andere Bild-Felder
   }[]
   imageUrl?: string
   ownerId?: string
 
-  // --- HIER SIND DIE NEUEN FELDER: ---
-  likes?: number        // Damit TypeScript 'r.likes' kennt
-  reviews?: Review[]    // Damit TypeScript 'r.reviews' kennt
-  // -----------------------------------
+  likes?: number
+  reviews?: Review[]
 }
 
-// DTO für das Erstellen eines Rezepts
 export interface CreateRecipeDTO {
   title: string
   description: string
@@ -50,7 +41,6 @@ export interface CreateRecipeDTO {
   imageUrl?: string
 }
 
-// Antwort von /api/images (ImageResponse vom Backend)
 export interface ImageResponse {
   id: number
   url: string
@@ -60,7 +50,6 @@ export interface ImageResponse {
   recipeId?: number | null
 }
 
-// Hilfstyypen für Rezepte mit Bildern
 export type RecipeWithImages = Recipe & {
   images: RecipeImage[]
 }

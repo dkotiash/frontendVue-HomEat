@@ -1,13 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
-import RezeptListe from '@/components/RezeptListe.vue'
+import RezepteHinzufuegenView from '@/views/RezepteHinzufuegenView.vue'
 import SucheView from '@/views/SucheView.vue'
 import EinkaufslistView from '@/views/EinkaufslistView.vue'
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
-  { path: '/rezepte', name: 'rezepte', component: RezeptListe },
-  { path: '/suche', name: 'suche', component: SucheView }, // temporär, bis eine Suche-View vorhanden ist
+  { path: '/rezepte', name: 'rezepte', component: RezepteHinzufuegenView },
+  { path: '/suche', name: 'suche', component: SucheView },
   {
     path: '/einkaufsliste',
     name: 'einkaufsliste',

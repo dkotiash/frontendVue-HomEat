@@ -1,6 +1,3 @@
-// src/api.ts
-// Функції роботи з бекендом (fetch + типи)
-
 import type { Recipe, CreateRecipeDTO, ImageResponse } from './types';
 
 const BASE = (import.meta as any).env?.VITE_BACKEND_BASE_URL || 'http://localhost:8080';
@@ -17,7 +14,6 @@ async function http<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
   return undefined as T;
 }
 
-// ---------- Recipes ----------
 export async function getRecipes(): Promise<Recipe[]> {
   return http<Recipe[]>(`${API}/recipes`);
 }
@@ -30,9 +26,7 @@ export async function createRecipe(dto: CreateRecipeDTO): Promise<Recipe> {
   });
 }
 
-// ---------- Images ----------
 export function imageUrl(id: number | string): string {
-  // пряме посилання на байти
   return `${API}/images/${id}`;
 }
 
@@ -43,7 +37,7 @@ export async function uploadImage(file: File, recipeId?: number): Promise<ImageR
 
   return http<ImageResponse>(`${API}/images`, {
     method: 'POST',
-    body: fd, // НЕ ставимо Content-Type вручну!
+    body: fd,
   });
 }
 

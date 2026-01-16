@@ -54,13 +54,11 @@
 import { ref, watch, computed } from 'vue'
 import { useAuth0 } from '@auth0/auth0-vue'
 
-// Interface für ein Item
 interface ShoppingItem {
   text: string
   done: boolean
 }
 
-// Auth0 Variablen
 const { user, isAuthenticated, loginWithRedirect } = useAuth0()
 
 const newItem = ref('')
@@ -68,15 +66,12 @@ const items = ref<ShoppingItem[]>([])
 
 const login = () => loginWithRedirect()
 
-// --- SPEICHER LOGIK (User-abhängig) ---
 
-// Wir bauen einen dynamischen Speicherschlüssel basierend auf der User-ID
 const storageKey = computed(() => {
   if (!isAuthenticated.value || !user.value?.sub) return null
   return `homeat_shopping_list_${user.value.sub}`
 })
 
-// Funktion zum Laden der Liste
 function loadItems() {
   if (!storageKey.value) {
     items.value = [] // Wenn kein User da ist, leere Liste
@@ -90,20 +85,14 @@ function loadItems() {
   }
 }
 
-// Automatisch laden, wenn sich der User ändert (Login/Logout/Start)
 watch(storageKey, () => {
   loadItems()
 }, { immediate: true })
-
-// Automatisch speichern, wenn sich die Items ändern
 watch(items, (newVal) => {
   if (storageKey.value) {
     localStorage.setItem(storageKey.value, JSON.stringify(newVal))
   }
 }, { deep: true })
-
-
-// --- AKTIONEN ---
 
 function addItem() {
   const text = newItem.value.trim()
@@ -114,7 +103,6 @@ function addItem() {
 }
 
 function toggleItem(index: number) {
-  // FEHLERBEHEBUNG: Erst prüfen, ob das Item existiert
   const item = items.value[index]
   if (item) {
     item.done = !item.done
@@ -122,7 +110,6 @@ function toggleItem(index: number) {
 }
 
 function deleteItem(index: number) {
-  // FEHLERBEHEBUNG: splice ist sicher, aber wir prüfen kurz
   if (items.value[index]) {
     items.value.splice(index, 1)
   }
@@ -138,7 +125,6 @@ function clearAll() {
 <style scoped>
 .container { max-width: 800px; margin: 0 auto; padding: 16px; }
 
-/* Panel Style */
 .panel {
   background: rgba(28, 28, 28, 0.6);
   padding: 20px;
@@ -147,7 +133,6 @@ function clearAll() {
   margin-bottom: 20px;
 }
 
-/* Eingabe */
 .input-group { display: flex; gap: 12px; align-items: center; }
 .input {
   flex: 1; background: #1e1c1c; color: white;
@@ -156,7 +141,6 @@ function clearAll() {
 }
 .input:focus { border-color: #d8a77f; }
 
-/* Liste */
 .shopping-list { list-style: none; padding: 0; margin: 0; }
 .shopping-list li {
   display: flex; justify-content: space-between; align-items: center;
@@ -170,11 +154,9 @@ function clearAll() {
 .checkbox { font-size: 1.2rem; }
 .text { font-size: 1.1rem; transition: all 0.2s; }
 
-/* Erledigt */
 .done .text { text-decoration: line-through; opacity: 0.5; color: #aaa; }
 .done .checkbox { opacity: 0.6; }
 
-/* Buttons */
 .delete-btn {
   background: transparent; border: none; color: #ff6b6b;
   font-size: 1.2rem; cursor: pointer; padding: 5px 10px; opacity: 0.5;
