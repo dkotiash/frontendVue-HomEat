@@ -44,6 +44,12 @@
             {{ ing.name }}<span v-if="ing.quantity"> — {{ ing.quantity }}</span>
           </li>
         </ul>
+
+        <div style="margin-top: 10px;">
+          <button class="btn btn-peach btn-small-text" @click="addToShoppingList">
+            🛒 Zutaten auf Einkaufsliste
+          </button>
+        </div>
       </div>
 
       <div class="action-row">
@@ -89,8 +95,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue' // Додали watch
-import type { Recipe} from '@/types' // Додали тип Review, якщо він є
+import { ref, watch } from 'vue'
+import type { Recipe } from '@/types'
 import { useAuth0 } from '@auth0/auth0-vue'
 
 const props = defineProps<{
@@ -119,6 +125,36 @@ watch(() => props.recipe.reviews, (newVal) => {
 
 function toggleComments() {
   showComments.value = !showComments.value
+}
+
+function addToShoppingList() {
+  if (!props.recipe.ingredients || props.recipe.ingredients.length === 0) return
+
+  if (!isAuthenticated.value || !user.value?.sub) {
+    alert("Bitte melde dich an, um die Einkaufsliste zu nutzen.")
+    return
+  }
+
+  const storageKey = `homeat_shopping_list_${user.value.sub}`
+
+  const stored = localStorage.getItem(storageKey)
+  const currentList = stored ? JSON.parse(stored) : []
+
+  const newItems = props.recipe.ingredients.map(ing => {
+    const textString = ing.quantity
+      ? `${ing.quantity} ${ing.name}`
+      : ing.name
+
+    return {
+      text: textString,
+      done: false
+    }
+  })
+
+  const updatedList = [...currentList, ...newItems]
+  localStorage.setItem(storageKey, JSON.stringify(updatedList))
+
+  alert(`${newItems.length} Zutaten wurden auf deine Liste gesetzt! 🛒`)
 }
 
 async function addReply() {
@@ -185,4 +221,5 @@ async function addReply() {
 .input-dark { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px; border-radius: 6px; flex: 1; outline: none; }
 .input-dark:focus { border-color: #ffccaa; }
 .btn-small { padding: 6px 12px; }
+.btn-small-text { font-size: 0.85rem; padding: 6px 15px; }
 </style>
